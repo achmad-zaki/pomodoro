@@ -5,14 +5,16 @@ import { cn } from "@/lib/utils";
 import {
   RiCupLine,
   RiFocus3Line,
-  RiListCheck3,
   RiMoonLine,
   RiPauseFill,
   RiPlayFill,
-  RiRestartLine,
+  RiResetRightLine,
+  RiVolumeMuteLine,
   RiVolumeUpLine
 } from "@remixicon/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { SettingsSidebar, type TimerDurations } from "./settings-sidebar";
+import { TaskSidebar } from "./task-sidebar";
 
 type TimerMode = "pomodoro" | "shortBreak" | "longBreak";
 
@@ -24,36 +26,49 @@ interface ModeConfig {
   ringColor: string;
 }
 
-const MODES: Record<TimerMode, ModeConfig> = {
-  pomodoro: {
-    label: "Pomodoro",
-    duration: 25 * 60,
-    icon: RiFocus3Line,
-    themeColor: "text-primary",
-    ringColor: "stroke-primary",
-  },
-  shortBreak: {
-    label: "Short Break",
-    duration: 5 * 60,
-    icon: RiCupLine,
-    themeColor: "text-amber-500 dark:text-amber-400",
-    ringColor: "stroke-amber-500",
-  },
-  longBreak: {
-    label: "Long Break",
-    duration: 15 * 60,
-    icon: RiMoonLine,
-    themeColor: "text-emerald-500 dark:text-emerald-400",
-    ringColor: "stroke-emerald-500",
-  },
-};
-
 export default function PomodoroTimer() {
+  const [durations, setDurations] = useState<TimerDurations>({
+    pomodoro: 25,
+    shortBreak: 5,
+    longBreak: 15,
+  });
+
   const [mode, setMode] = useState<TimerMode>("pomodoro");
-  const [timeLeft, setTimeLeft] = useState<number>(MODES.pomodoro.duration);
+  const [timeLeft, setTimeLeft] = useState<number>(25 * 60);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [sessionsCompleted, setSessionsCompleted] = useState<number>(0);
+
+  const modes: Record<TimerMode, ModeConfig> = {
+    pomodoro: {
+      label: "Pomodoro",
+      duration: durations.pomodoro * 60,
+      icon: RiFocus3Line,
+      themeColor: "text-primary",
+      ringColor: "stroke-primary",
+    },
+    shortBreak: {
+      label: "Short Break",
+      duration: durations.shortBreak * 60,
+      icon: RiCupLine,
+      themeColor: "text-amber-500 dark:text-amber-400",
+      ringColor: "stroke-amber-500",
+    },
+    longBreak: {
+      label: "Long Break",
+      duration: durations.longBreak * 60,
+      icon: RiMoonLine,
+      themeColor: "text-emerald-500 dark:text-emerald-400",
+      ringColor: "stroke-emerald-500",
+    },
+  };
+
+  const handleUpdateDurations = (newDurations: TimerDurations) => {
+    setDurations(newDurations);
+    if (!isRunning) {
+      setTimeLeft(newDurations[mode] * 60);
+    }
+  };
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -101,7 +116,7 @@ export default function PomodoroTimer() {
   const handleModeChange = (newMode: TimerMode) => {
     setIsRunning(false);
     setMode(newMode);
-    setTimeLeft(MODES[newMode].duration);
+    setTimeLeft(modes[newMode].duration);
   };
 
   // Toggle Play / Pause
@@ -112,23 +127,7 @@ export default function PomodoroTimer() {
   // Reset / Reload
   const handleReset = () => {
     setIsRunning(false);
-    setTimeLeft(MODES[mode].duration);
-  };
-
-  // Skip to next session
-  const handleSkip = () => {
-    setIsRunning(false);
-    if (mode === "pomodoro") {
-      const newSessions = sessionsCompleted + 1;
-      setSessionsCompleted(newSessions);
-      if (newSessions % 4 === 0) {
-        handleModeChange("longBreak");
-      } else {
-        handleModeChange("shortBreak");
-      }
-    } else {
-      handleModeChange("pomodoro");
-    }
+    setTimeLeft(modes[mode].duration);
   };
 
   // Timer Tick Effect
@@ -164,22 +163,14 @@ export default function PomodoroTimer() {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     const formatted = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-    document.title = `${formatted} • ${MODES[mode].label} | Pomodoro`;
-  }, [timeLeft, mode]);
+    document.title = `${formatted} • ${modes[mode].label} | Pomodoro`;
+  }, [timeLeft, mode, modes]);
 
   // Time format helper
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
   const formattedMinutes = String(minutes).padStart(2, "0");
   const formattedSeconds = String(seconds).padStart(2, "0");
-
-  // Circular progress calculation
-  const totalDuration = MODES[mode].duration;
-  const progress = ((totalDuration - timeLeft) / totalDuration) * 100;
-  const strokeDashoffset = 100 - progress;
-
-  const currentModeInfo = MODES[mode];
-  const ModeIcon = currentModeInfo.icon;
 
   return (
     <div className="flex flex-col items-center justify-center w-full max-w-xl mx-auto px-4 py-8">
@@ -211,7 +202,7 @@ export default function PomodoroTimer() {
       <div className="w-full relative transition-all duration-300">
         {/* Tab Navigation */}
         <div className="relative z-10 flex items-center gap-1.5 justify-center p-1.5 mb-8 rounded-full bg-muted border border-border">
-          {(Object.keys(MODES) as TimerMode[]).map((tabMode) => {
+          {(Object.keys(modes) as TimerMode[]).map((tabMode) => {
             const isActive = mode === tabMode;
             return (
               <button
@@ -224,54 +215,16 @@ export default function PomodoroTimer() {
                     : "text-muted-foreground hover:text-foreground hover:bg-card/40"
                 )}
               >
-                <span>{MODES[tabMode].label}</span>
+                <span>{modes[tabMode].label}</span>
               </button>
             );
           })}
         </div>
 
         {/* Center Timer Section */}
-        <div className="relative z-10 flex flex-col items-center justify-center py-4 my-2">
-          {/* Circular SVG Ring & Time Display */}
-          <div className="relative flex items-center justify-center size-64 sm:size-72">
-            <svg
-              className="size-full -rotate-90 transform"
-              viewBox="0 0 100 100"
-            >
-              {/* Background Circle */}
-              <circle
-                cx="50"
-                cy="50"
-                r="44"
-                className="stroke-muted"
-                strokeWidth="5"
-                fill="transparent"
-              />
-              {/* Animated Progress Circle */}
-              <circle
-                cx="50"
-                cy="50"
-                r="44"
-                className={cn(
-                  "transition-all duration-500 ease-linear",
-                  mode === "pomodoro" && "stroke-primary",
-                  mode === "shortBreak" && "stroke-amber-500",
-                  mode === "longBreak" && "stroke-emerald-500"
-                )}
-                strokeWidth="5"
-                strokeDasharray="276.46"
-                strokeDashoffset={(276.46 * strokeDashoffset) / 100}
-                strokeLinecap="round"
-                fill="transparent"
-              />
-            </svg>
-
-            {/* Centered Numbers */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <div className="font-mono text-5xl sm:text-6xl font-extrabold tracking-tight text-foreground select-none tabular-nums">
-                {formattedMinutes}:{formattedSeconds}
-              </div>
-            </div>
+        <div className="relative z-10 flex flex-col items-center justify-center py-8 my-4 select-none">
+          <div className="text-7xl sm:text-8xl md:text-9xl font-bold tracking-tight text-foreground tabular-nums">
+            {formattedMinutes} : {formattedSeconds}
           </div>
         </div>
 
@@ -284,7 +237,7 @@ export default function PomodoroTimer() {
             title="Reset Timer"
             className="size-14 sm:size-16"
           >
-            <RiRestartLine className="size-5 sm:size-6" />
+            <RiResetRightLine className="size-5 sm:size-6" />
           </Button>
 
           {/* Main Play / Pause Button */}
@@ -315,12 +268,18 @@ export default function PomodoroTimer() {
           </Button>
         </div>
         <div className="mt-5 flex justify-center gap-2">
-          <Button size="lg" variant="secondary">
-            <RiListCheck3 />
-            Tugas
-          </Button>
-          <Button size="icon-lg" variant="secondary">
-            <RiVolumeUpLine />
+          <TaskSidebar />
+          <SettingsSidebar
+            durations={durations}
+            onUpdateDurations={handleUpdateDurations}
+          />
+          <Button
+            size="icon-lg"
+            variant="secondary"
+            onClick={() => setSoundEnabled((prev) => !prev)}
+            title={soundEnabled ? "Matikan Suara" : "Nyalakan Suara"}
+          >
+            {soundEnabled ? <RiVolumeUpLine /> : <RiVolumeMuteLine />}
           </Button>
         </div>
       </div>
