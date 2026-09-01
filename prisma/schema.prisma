@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Task {
+  id        String            @id @default(cuid())
+  title     String
+  completed Boolean           @default(false)
+  sessions  PomodoroSession[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@map("task")
+}
+
+model PomodoroSession {
+  id          String              @id @default(cuid())
+  type        PomodoroSessionType
+  duration    Int
+  completedAt DateTime            @default(now())
+  taskId      String?
+  task        Task?               @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  createdAt   DateTime            @default(now())
+
+  @@map("pomodoro_session")
+}
+
+enum PomodoroSessionType {
+  FOCUS
+  SHORT_BREAK
+  LONG_BREAK
+}
+
+model PomodoroSetting {
+  id                      String   @id @default(cuid())
+  focusDuration           Int      @default(25)
+  shortBreakDuration      Int      @default(5)
+  longBreakDuration       Int      @default(15)
+  sessionsBeforeLongBreak Int      @default(4)
+  autoStartBreak          Boolean  @default(false)
+  autoStartFocus          Boolean  @default(false)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@map("pomodoro_setting")
+}
