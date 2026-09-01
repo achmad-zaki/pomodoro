@@ -1,11 +1,11 @@
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
-import { DM_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { DM_Mono, Rubik } from "next/font/google";
 import "../styles/globals.css";
 
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-sans",
+const rubik = Rubik({
   subsets: ["latin"],
+  variable: "--font-sans",
   display: "swap",
 });
 
@@ -28,7 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", jakarta.variable, dmMono.variable)}
+      className={cn("h-full", "antialiased", rubik.variable, dmMono.variable)}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

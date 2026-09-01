@@ -5,10 +5,12 @@ import { cn } from "@/lib/utils";
 import {
   RiCupLine,
   RiFocus3Line,
+  RiListCheck3,
   RiMoonLine,
   RiPauseFill,
   RiPlayFill,
-  RiRestartLine
+  RiRestartLine,
+  RiVolumeUpLine
 } from "@remixicon/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -208,7 +210,7 @@ export default function PomodoroTimer() {
       {/* Main Timer Container */}
       <div className="w-full relative transition-all duration-300">
         {/* Tab Navigation */}
-        <div className="relative z-10 flex items-center justify-center p-1.5 mb-8 rounded-full bg-muted border border-border">
+        <div className="relative z-10 flex items-center gap-1.5 justify-center p-1.5 mb-8 rounded-full bg-muted border border-border">
           {(Object.keys(MODES) as TimerMode[]).map((tabMode) => {
             const isActive = mode === tabMode;
             return (
@@ -241,7 +243,7 @@ export default function PomodoroTimer() {
                 cx="50"
                 cy="50"
                 r="44"
-                className="stroke-muted/40"
+                className="stroke-muted"
                 strokeWidth="5"
                 fill="transparent"
               />
@@ -266,7 +268,7 @@ export default function PomodoroTimer() {
 
             {/* Centered Numbers */}
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <div className="font-mono text-6xl sm:text-7xl font-extrabold tracking-tight text-foreground select-none tabular-nums drop-shadow-sm">
+              <div className="font-mono text-5xl sm:text-6xl font-extrabold tracking-tight text-foreground select-none tabular-nums">
                 {formattedMinutes}:{formattedSeconds}
               </div>
             </div>
@@ -280,7 +282,7 @@ export default function PomodoroTimer() {
             size="icon-lg"
             onClick={handleReset}
             title="Reset Timer"
-            className="size-12 sm:size-14"
+            className="size-14 sm:size-16"
           >
             <RiRestartLine className="size-5 sm:size-6" />
           </Button>
@@ -301,15 +303,24 @@ export default function PomodoroTimer() {
           >
             {isRunning ? (
               <>
-                <RiPauseFill className="size-6 sm:size-7" />
+                <RiPauseFill className="size-5 sm:size-6" />
                 <span>JEDA</span>
               </>
             ) : (
               <>
-                <RiPlayFill className="size-6 sm:size-7" />
+                <RiPlayFill className="size-5 sm:size-6" />
                 <span>MULAI</span>
               </>
             )}
+          </Button>
+        </div>
+        <div className="mt-5 flex justify-center gap-2">
+          <Button size="lg" variant="secondary">
+            <RiListCheck3 />
+            Tugas
+          </Button>
+          <Button size="icon-lg" variant="secondary">
+            <RiVolumeUpLine />
           </Button>
         </div>
       </div>
