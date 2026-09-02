@@ -10,6 +10,8 @@ import {
   RiStarLine,
   RiTargetLine,
 } from "@remixicon/react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { useMemo, useState } from "react";
 import { useDeleteTask } from "../hooks/use-delete-task";
 import { useGetTask } from "../hooks/use-get-task";
@@ -23,6 +25,7 @@ export function TaskList() {
   const { data: tasksResponse, isLoading, isError, refetch } = useGetTask();
   const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
+  const queryClient = useQueryClient();
 
   const [focusTaskId, setFocusTaskId] = useState<string | null>(null);
 
@@ -46,10 +49,20 @@ export function TaskList() {
 
   // Handler functions
   const handleToggle = (id: string, currentCompleted: boolean) => {
-    updateTaskMutation.mutate({
-      id,
-      payload: { completed: !currentCompleted },
-    });
+    updateTaskMutation.mutate(
+      {
+        id,
+        payload: { completed: !currentCompleted },
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["tasks"] });
+        },
+        onError: (error) => {
+          toast.error(error.message);
+        },
+      }
+    );
   };
 
   const handleFocus = (id: string) => {
@@ -61,9 +74,20 @@ export function TaskList() {
   };
 
   const handleUpdateTitle = (id: string, newTitle: string) => {
-    updateTaskMutation.mutate({
+    const promise = updateTaskMutation.mutateAsync({
       id,
       payload: { title: newTitle },
+    });
+
+    toast.promise(promise, {
+      loading: "Memperbarui tugas...",
+      success: () => {
+        queryClient.invalidateQueries({ queryKey: ["tasks"] });
+        return "Tugas berhasil diperbarui";
+      },
+      error: (error) => {
+        return error.message;
+      },
     });
   };
 

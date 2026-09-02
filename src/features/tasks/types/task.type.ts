@@ -14,3 +14,8 @@ export type CreateTaskResponse = {
     message: string
     data: Task
 }
+
+export type UpdateTaskResponse = {
+    message: string
+    data: Task
+}

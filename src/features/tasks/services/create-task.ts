@@ -12,9 +12,6 @@ export const createTask = async (title: string): Promise<CreateTaskResponse> => 
   const data = await response.json();
 
   if (!response.ok) {
-    if (data.title && Array.isArray(data.title)) {
-      throw new Error(data.title[0]);
-    }
     throw new Error(data.message || "Gagal menambahkan tugas");
   }
 

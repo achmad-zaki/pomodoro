@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiAddLine } from "@remixicon/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import { useCreateTask } from "../hooks/use-create-task";
 
@@ -20,7 +22,8 @@ const createTaskSchema = z.object({
 type TaskFormData = z.infer<typeof createTaskSchema>;
 
 export default function TaskForm() {
-    const { mutate: addTask, isPending } = useCreateTask();
+    const createTask = useCreateTask();
+    const queryClient = useQueryClient();
 
     const form = useForm<TaskFormData>({
         resolver: zodResolver(createTaskSchema),
@@ -30,9 +33,17 @@ export default function TaskForm() {
     });
 
     const onSubmit = (data: TaskFormData) => {
-        addTask(data.title.trim(), {
-            onSuccess: () => {
+        const promise = createTask.mutateAsync(data.title);
+
+        toast.promise(promise, {
+            loading: "Menambahkan tugas...",
+            success: () => {
+                queryClient.invalidateQueries({ queryKey: ["tasks"] });
                 form.reset();
+                return "Tugas berhasil ditambahkan"
+            },
+            error: (error) => {
+                return error.message
             },
         });
     };
@@ -50,7 +61,7 @@ export default function TaskForm() {
                                 aria-invalid={fieldState.invalid}
                                 type="text"
                                 placeholder="Tambahkan tugas baru..."
-                                disabled={isPending}
+                                disabled={createTask.isPending}
                                 className="w-full"
                             />
 
@@ -62,12 +73,12 @@ export default function TaskForm() {
                 />
                 <Button
                     type="submit"
-                    disabled={isPending}
+                    disabled={createTask.isPending}
                     size="default"
                     variant="3d"
                     className="shrink-0 gap-1.5 cursor-pointer"
                 >
-                    {isPending ? (
+                    {createTask.isPending ? (
                         <Spinner className="size-4" />
                     ) : (
                         <RiAddLine className="size-4" />
