@@ -38,7 +38,7 @@ export default function TaskForm() {
     };
 
     return (
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="border-b border-border pb-6">
             <div className="flex items-start gap-2">
                 <Controller
                     control={form.control}
