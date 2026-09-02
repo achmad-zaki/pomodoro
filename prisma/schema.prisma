@@ -11,6 +11,7 @@ model Task {
   id        String            @id @default(cuid())
   title     String
   completed Boolean           @default(false)
+  isFocused Boolean           @default(false)
   sessions  PomodoroSession[]
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt

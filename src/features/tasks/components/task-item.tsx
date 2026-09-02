@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
@@ -69,139 +70,117 @@ export function TaskItem({
     return (
         <div
             className={cn(
-                "group relative flex items-center justify-between gap-3 p-3.5 rounded-xl border transition-all duration-200 overflow-hidden",
+                "group relative flex items-start gap-3 p-3.5 rounded-xl border transition-all duration-200 overflow-hidden",
                 task.completed
-                    ? "bg-muted/30 border-border/60 text-muted-foreground"
+                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-900"
                     : isFocusTarget
-                        ? "bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-card border-amber-500/40 shadow-sm ring-1 ring-amber-500/20"
-                        : "bg-card border-border/70 hover:border-primary/40 hover:shadow-xs"
+                        ? "bg-linear-to-r from-amber-500/10 via-amber-500/5 to-card border-amber-500/40"
+                        : "bg-card border-border hover:border-primary/40"
             )}
         >
-            {/* Accent Indicator for Focus Task */}
-            {isFocusTarget && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500" />
-            )}
+            {/* Checkbox */}
+            <Checkbox
+                checked={task.completed}
+                onCheckedChange={() => onToggle?.(task.id, task.completed)}
+                aria-label={task.completed ? "Tandai belum selesai" : "Tandai selesai"}
+                className="mt-0.5 cursor-pointer data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+            />
 
-            {/* Main Content Area: Checkbox + Title */}
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-                {/* Checkbox */}
-                <button
-                    type="button"
-                    onClick={() => onToggle?.(task.id, task.completed)}
-                    aria-label={task.completed ? "Tandai belum selesai" : "Tandai selesai"}
-                    className={cn(
-                        "size-5.5 rounded-lg border-2 flex items-center justify-center transition-all shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                        task.completed
-                            ? "bg-emerald-500 border-emerald-500 text-white shadow-xs scale-100"
-                            : isFocusTarget
-                                ? "border-amber-500/60 bg-amber-500/10 hover:bg-amber-500 hover:border-amber-500 hover:text-white"
-                                : "border-muted-foreground/30 bg-background hover:border-primary hover:bg-primary/10"
-                    )}
-                >
-                    {task.completed && (
-                        <RiCheckLine className="size-4 stroke-[3] animate-in zoom-in-50 duration-150" />
-                    )}
-                </button>
-
+            {/* Content Area: Title & Action Buttons below */}
+            <div className="flex-1 min-w-0 space-y-1.5">
                 {/* Title or Inline Edit Input */}
-                <div className="flex-1 min-w-0 flex items-center gap-2">
-                    {isEditing ? (
-                        <div className="flex items-center gap-1.5 w-full">
-                            <Input
-                                type="text"
-                                value={editTitle}
-                                onChange={(e) => setEditTitle(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                autoFocus
-                                className="h-8 text-sm px-2.5 py-1 bg-background"
-                                placeholder="Nama tugas..."
-                            />
+                {isEditing ? (
+                    <div className="flex items-center gap-1.5 w-full">
+                        <Input
+                            type="text"
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            autoFocus
+                            className="h-8 text-sm px-2.5 py-1 bg-background"
+                            placeholder="Nama tugas..."
+                        />
+                        <button
+                            type="button"
+                            onClick={handleSave}
+                            title="Simpan (Enter)"
+                            className="text-emerald-600 hover:text-emerald-700 shrink-0"
+                        >
+                            <RiCheckLine className="size-4" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleCancel}
+                            title="Batal (Esc)"
+                            className="text-muted-foreground shrink-0"
+                        >
+                            <RiCloseLine className="size-4" />
+                        </button>
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-between gap-2">
+                        <span
+                            onClick={() => onToggle?.(task.id, task.completed)}
+                            onDoubleClick={handleStartEditing}
+                            className={cn(
+                                "text-sm font-medium leading-normal cursor-pointer select-none transition-colors",
+                                task.completed
+                                    ? "text-emerald-700"
+                                    : "text-foreground group-hover:text-foreground/90"
+                            )}
+                        >
+                            {task.title}
+                        </span>
+
+                        {/* Focus Badge */}
+                        {isFocusTarget && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 border border-amber-500/30 text-[11px] font-semibold shrink-0 animate-in fade-in duration-200">
+                                <RiTargetLine className="size-3" />
+                                Target Utama
+                            </span>
+                        )}
+                    </div>
+                )}
+
+                {/* Action Buttons Underneath Title */}
+                {!isEditing && (
+                    <div className="flex items-center gap-1 pt-0.5">
+                        {/* Toggle Focus Button */}
+                        {!task.completed && (
                             <Button
                                 type="button"
-                                size="icon-xs"
                                 variant="ghost"
-                                onClick={handleSave}
-                                title="Simpan (Enter)"
-                                className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 shrink-0"
-                            >
-                                <RiCheckLine className="size-4" />
-                            </Button>
-                            <Button
-                                type="button"
                                 size="icon-xs"
-                                variant="ghost"
-                                onClick={handleCancel}
-                                title="Batal (Esc)"
-                                className="text-muted-foreground hover:bg-muted shrink-0"
-                            >
-                                <RiCloseLine className="size-4" />
-                            </Button>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                            <span
-                                onClick={() => onToggle?.(task.id, task.completed)}
-                                onDoubleClick={handleStartEditing}
+                                onClick={() => onFocus?.(task.id)}
+                                title={isFocusTarget ? "Fokus aktif" : "Jadikan Target Utama"}
                                 className={cn(
-                                    "text-sm font-medium leading-normal cursor-pointer select-none transition-colors truncate",
-                                    task.completed
-                                        ? "line-through text-muted-foreground/80"
-                                        : "text-foreground group-hover:text-foreground/90"
+                                    "rounded-lg transition-colors cursor-pointer",
+                                    isFocusTarget
+                                        ? "text-amber-500 bg-amber-500/15 hover:bg-amber-500/25"
+                                        : "text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10"
                                 )}
                             >
-                                {task.title}
-                            </span>
+                                <RiFocus3Line className="size-3.5" />
+                            </Button>
+                        )}
 
-                            {/* Focus Badge */}
-                            {isFocusTarget && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[11px] font-semibold shrink-0 animate-in fade-in duration-200">
-                                    <RiTargetLine className="size-3 animate-pulse" />
-                                    Target Utama
-                                </span>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Action Buttons */}
-            {!isEditing && (
-                <div className="flex items-center gap-1 shrink-0 opacity-90 group-hover:opacity-100 transition-opacity">
-                    {/* Toggle Focus Button */}
-                    {!task.completed && (
+                        {/* Edit Button */}
                         <Button
                             type="button"
                             variant="ghost"
                             size="icon-xs"
-                            onClick={() => onFocus?.(task.id)}
-                            title={isFocusTarget ? "Fokus aktif" : "Jadikan Target Utama"}
-                            className={cn(
-                                "rounded-lg transition-colors cursor-pointer",
-                                isFocusTarget
-                                    ? "text-amber-500 bg-amber-500/15 hover:bg-amber-500/25"
-                                    : "text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10"
-                            )}
+                            onClick={handleStartEditing}
+                            title="Edit tugas"
+                            className="rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
                         >
-                            <RiFocus3Line className="size-3.5" />
+                            <RiPencilLine className="size-3.5" />
                         </Button>
-                    )}
 
-                    {/* Edit Button */}
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-xs"
-                        onClick={handleStartEditing}
-                        title="Edit tugas"
-                        className="rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
-                    >
-                        <RiPencilLine className="size-3.5" />
-                    </Button>
-
-                    {/* Delete Button */}
-                    <TaskDelete taskId={task.id} />
-                </div>
-            )}
+                        {/* Delete Button */}
+                        <TaskDelete taskId={task.id} />
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

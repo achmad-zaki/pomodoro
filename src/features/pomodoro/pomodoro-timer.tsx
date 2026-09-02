@@ -233,6 +233,7 @@ export default function PomodoroTimer() {
           {/* Reload / Reset Button */}
           <Button
             size="icon-lg"
+            variant="3d"
             onClick={handleReset}
             title="Reset Timer"
             className="size-14 sm:size-16"
@@ -243,6 +244,7 @@ export default function PomodoroTimer() {
           {/* Main Play / Pause Button */}
           <Button
             size="lg"
+            variant="3d"
             onClick={togglePlayPause}
             className={cn(
               "h-14 sm:h-16 px-8 sm:px-10 text-base sm:text-lg font-bold gap-2.5",
