@@ -1,11 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiAddLine } from "@remixicon/react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useCreateTask } from "../hooks/use-create-task";
 
@@ -21,12 +22,7 @@ type TaskFormData = z.infer<typeof createTaskSchema>;
 export default function TaskForm() {
     const { mutate: addTask, isPending } = useCreateTask();
 
-    const {
-        register,
-        handleSubmit,
-        reset,
-        formState: { errors },
-    } = useForm<TaskFormData>({
+    const form = useForm<TaskFormData>({
         resolver: zodResolver(createTaskSchema),
         defaultValues: {
             title: "",
@@ -36,20 +32,33 @@ export default function TaskForm() {
     const onSubmit = (data: TaskFormData) => {
         addTask(data.title.trim(), {
             onSuccess: () => {
-                reset();
+                form.reset();
             },
         });
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-1.5 mb-4">
-            <div className="flex items-center gap-2">
-                <Input
-                    {...register("title")}
-                    type="text"
-                    placeholder="Tambahkan tugas baru..."
-                    disabled={isPending}
-                    className="flex-1"
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="flex items-start gap-2">
+                <Controller
+                    control={form.control}
+                    name="title"
+                    render={({ field, fieldState }) => (
+                        <Field className="flex-1" data-invalid={fieldState.invalid}>
+                            <Input
+                                {...field}
+                                aria-invalid={fieldState.invalid}
+                                type="text"
+                                placeholder="Tambahkan tugas baru..."
+                                disabled={isPending}
+                                className="w-full"
+                            />
+
+                            {fieldState.error && (
+                                <FieldError className="text-xs" errors={[fieldState.error]} />
+                            )}
+                        </Field>
+                    )}
                 />
                 <Button
                     type="submit"
@@ -66,11 +75,6 @@ export default function TaskForm() {
                     <span>Tambah</span>
                 </Button>
             </div>
-            {errors.title?.message && (
-                <p className="text-xs text-destructive font-medium px-1">
-                    {errors.title.message}
-                </p>
-            )}
         </form>
     );
 }

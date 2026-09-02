@@ -21,7 +21,7 @@ export default function TaskSheet() {
                     <SheetDescription>Kelola target & fokus Kamu</SheetDescription>
                 </SheetHeader>
 
-                <div className="p-4">
+                <div className="p-4 flex flex-col gap-10">
                     <TaskForm />
                     <TaskList />
                 </div>
