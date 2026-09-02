@@ -11,8 +11,8 @@ import {
   RiTargetLine,
 } from "@remixicon/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { useDeleteTask } from "../hooks/use-delete-task";
 import { useGetTask } from "../hooks/use-get-task";
 import { useUpdateTask } from "../hooks/use-update-task";

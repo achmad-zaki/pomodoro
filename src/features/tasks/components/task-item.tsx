@@ -27,7 +27,6 @@ export function TaskItem({
     task,
     onToggle,
     onFocus,
-    onDelete,
     onUpdateTitle,
 }: TaskItemProps) {
     const [isEditing, setIsEditing] = useState(false);
@@ -72,7 +71,7 @@ export function TaskItem({
             className={cn(
                 "group relative flex items-start gap-3 p-3.5 rounded-xl border transition-all duration-200 overflow-hidden",
                 task.completed
-                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-900"
+                    ? "bg-emerald-50 border-emerald-500/30 text-emerald-900"
                     : isFocusTarget
                         ? "bg-linear-to-r from-amber-500/10 via-amber-500/5 to-card border-amber-500/40"
                         : "bg-card border-border hover:border-primary/40"
