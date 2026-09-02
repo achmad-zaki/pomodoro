@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { DM_Mono, Rubik } from "next/font/google";
+import { Toaster } from "sonner";
 import "../styles/globals.css";
 
 const rubik = Rubik({
@@ -30,7 +31,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={cn("h-full", "antialiased", rubik.variable, dmMono.variable)}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Toaster position="top-center" richColors />
+        {children}
+      </body>
     </html>
   );
 }
