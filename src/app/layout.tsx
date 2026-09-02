@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import ReactQueryProvider from "@/providers/react-query-provider";
 import type { Metadata } from "next";
 import { DM_Mono, Rubik } from "next/font/google";
 import { Toaster } from "sonner";
@@ -32,8 +33,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={cn("h-full", "antialiased", rubik.variable, dmMono.variable)}
     >
       <body className="min-h-full flex flex-col">
-        <Toaster position="top-center" richColors />
-        {children}
+        <ReactQueryProvider>
+          <Toaster position="top-center" richColors />
+          {children}
+        </ReactQueryProvider>
       </body>
     </html>
   );

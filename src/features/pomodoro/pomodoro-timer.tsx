@@ -13,8 +13,8 @@ import {
   RiVolumeUpLine
 } from "@remixicon/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { SettingsSidebar, type TimerDurations } from "./settings-sidebar";
-import { TaskSidebar } from "./task-sidebar";
+import { SettingsSidebar, TimerDurations } from "../settings/components/settings-sidebar";
+import TaskSheet from "../tasks/components/task-sheet";
 
 type TimerMode = "pomodoro" | "shortBreak" | "longBreak";
 
@@ -268,7 +268,7 @@ export default function PomodoroTimer() {
           </Button>
         </div>
         <div className="mt-5 flex justify-center gap-2">
-          <TaskSidebar />
+          <TaskSheet />
           <SettingsSidebar
             durations={durations}
             onUpdateDurations={handleUpdateDurations}

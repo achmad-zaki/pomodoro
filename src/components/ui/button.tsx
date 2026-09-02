@@ -9,7 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-[0_4px_0_0_rgba(0,0,0,0.25)] hover:bg-primary/90 active:shadow-none active:translate-y-1 active:not-aria-[haspopup]:translate-y-1",
+        default: "bg-primary text-primary-foreground hover:bg-primary/80",
         outline:
           "border-border bg-input/30 hover:bg-input/50 hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
         secondary:
@@ -19,6 +19,10 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        "3d":
+          "bg-primary text-primary-foreground shadow-[0_4px_0_0_rgba(0,0,0,0.25)] hover:bg-primary/90 active:shadow-none active:translate-y-1 active:not-aria-[haspopup]:translate-y-1",
+        "3d-secondary":
+          "bg-secondary text-secondary-foreground shadow-[0_4px_0_0_rgba(0,0,0,0.15)] hover:bg-secondary/90 active:shadow-none active:translate-y-1 active:not-aria-[haspopup]:translate-y-1",
       },
       size: {
         default:

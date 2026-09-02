@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import {
   RiCheckLine,
@@ -12,14 +13,15 @@ import {
   RiPencilLine,
 } from "@remixicon/react";
 import { useState } from "react";
-import { type Task } from "./task-sidebar";
+import { useGetTask } from "../hooks/use-get-task";
+import { type Task } from "../types/task.type";
 
 interface TaskItemProps {
   task: Task;
-  onToggle: (id: string) => void;
-  onFocus: (id: string) => void;
-  onDelete: (id: string) => void;
-  onUpdateTitle: (id: string, newTitle: string) => void;
+  onToggle?: (id: string) => void;
+  onFocus?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onUpdateTitle?: (id: string, newTitle: string) => void;
 }
 
 export function TaskItem({
@@ -40,7 +42,7 @@ export function TaskItem({
 
   const handleSave = () => {
     if (editTitle.trim()) {
-      onUpdateTitle(task.id, editTitle.trim());
+      onUpdateTitle?.(task.id, editTitle.trim());
     } else {
       setEditTitle(task.title); // revert if empty
     }
@@ -61,7 +63,7 @@ export function TaskItem({
         "group relative p-3 flex items-center justify-between gap-3 transition-all duration-200 border border-border/80 hover:border-border hover:shadow-xs",
         task.completed && "bg-muted/40 opacity-75",
         task.isFocus && !task.completed &&
-          "border-primary/50 ring-1 ring-primary/20 bg-primary/[0.02]"
+        "border-primary/50 ring-1 ring-primary/20 bg-primary/[0.02]"
       )}
     >
       {/* Checkbox & Title */}
@@ -69,7 +71,7 @@ export function TaskItem({
         {/* Checkbox */}
         <button
           type="button"
-          onClick={() => onToggle(task.id)}
+          onClick={() => onToggle?.(task.id)}
           className={cn(
             "size-5 rounded-lg border flex items-center justify-center transition-all shrink-0 cursor-pointer",
             task.completed
@@ -94,7 +96,7 @@ export function TaskItem({
             />
           ) : (
             <span
-              onClick={() => onToggle(task.id)}
+              onClick={() => onToggle?.(task.id)}
               onDoubleClick={handleStartEditing}
               className={cn(
                 "text-sm font-medium leading-tight cursor-pointer select-none transition-colors truncate",
@@ -123,7 +125,7 @@ export function TaskItem({
           <Button
             variant="ghost"
             size="icon-xs"
-            onClick={() => onFocus(task.id)}
+            onClick={() => onFocus?.(task.id)}
             title={task.isFocus ? "Fokus aktif" : "Jadikan Fokus Utama"}
             className={cn(
               "rounded-lg transition-colors",
@@ -151,7 +153,7 @@ export function TaskItem({
         <Button
           variant="ghost"
           size="icon-xs"
-          onClick={() => onDelete(task.id)}
+          onClick={() => onDelete?.(task.id)}
           title="Hapus tugas"
           className="rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
         >
@@ -162,57 +164,54 @@ export function TaskItem({
   );
 }
 
-interface TaskListProps {
-  tasks: Task[];
-  filter: "all" | "active" | "completed";
-  onToggleTask: (id: string) => void;
-  onFocusTask: (id: string) => void;
-  onDeleteTask: (id: string) => void;
-  onUpdateTaskTitle: (id: string, newTitle: string) => void;
-}
+export function TaskList() {
+  const { data: tasks, isLoading, isError } = useGetTask();
 
-export function TaskList({
-  tasks,
-  filter,
-  onToggleTask,
-  onFocusTask,
-  onDeleteTask,
-  onUpdateTaskTitle,
-}: TaskListProps) {
-  if (tasks.length === 0) {
+  const noData = tasks?.data.length === 0;
+
+  if (isLoading) {
     return (
-      <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-border/80 bg-card/30">
-        <div className="size-12 rounded-full bg-muted/60 text-muted-foreground flex items-center justify-center mx-auto mb-3">
-          <RiListCheck3 className="size-6 opacity-60" />
+      <div className="flex items-center justify-center py-12 px-4 rounded-2xl border border-dashed border-border bg-card">
+        <div className="flex flex-col items-center gap-2">
+          <Spinner className="size-5" />
+          <span className="text-sm font-medium text-muted-foreground">Memuat Tugas...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-border bg-card">
+        <p className="text-sm font-medium text-muted-foreground">
+          Gagal memuat tugas
+        </p>
+      </div>
+    );
+  }
+
+  if (noData) {
+    return (
+      <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-border bg-card">
+        <div className="size-12 rounded-full bg-secondary text-primary flex items-center justify-center mx-auto mb-3">
+          <RiListCheck3 className="size-6" />
         </div>
         <p className="text-sm font-semibold text-foreground">
-          {filter === "completed"
-            ? "Belum ada tugas yang selesai"
-            : filter === "active"
-              ? "Tidak ada tugas aktif!"
-              : "Belum ada tugas"}
+          Belum ada tugas
         </p>
-        <p className="text-xs text-muted-foreground mt-1 max-w-[200px] mx-auto">
-          {filter === "all"
-            ? "Tulis tugas baru di atas untuk mulai fokus."
-            : "Semua tugas dalam kategori ini kosong."}
+        <p className="text-xs text-muted-foreground mt-1 max-w-50 mx-auto">
+          Tulis tugas baru di atas untuk mulai fokus.
         </p>
       </div>
     );
   }
 
   return (
-    <>
-      {tasks.map((task) => (
-        <TaskItem
-          key={task.id}
-          task={task}
-          onToggle={onToggleTask}
-          onFocus={onFocusTask}
-          onDelete={onDeleteTask}
-          onUpdateTitle={onUpdateTaskTitle}
-        />
+    <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-220px)] pr-1">
+      {tasks?.data.map((task) => (
+        <TaskItem key={task.id} task={task} />
       ))}
-    </>
+    </div>
   );
 }
+
