@@ -7,13 +7,16 @@ import { cn } from "@/lib/utils";
 import {
     RiCheckLine,
     RiCloseLine,
+    RiDeleteBin6Line,
     RiFocus3Line,
     RiPencilLine,
     RiTargetLine
 } from "@remixicon/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { toast } from "sonner";
+import { useDeleteTask } from "../hooks/use-delete-task";
 import { type Task } from "../types/task.type";
-import TaskDelete from "./task-delete";
 
 export interface TaskItemProps {
     task: Task;
@@ -29,10 +32,14 @@ export function TaskItem({
     isFocused,
     onToggle,
     onFocus,
+    onDelete,
     onUpdateTitle,
 }: TaskItemProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [editTitle, setEditTitle] = useState(task.title);
+
+    const deleteTask = useDeleteTask();
+    const queryClient = useQueryClient();
 
     const handleStartEditing = (e?: React.MouseEvent) => {
         e?.stopPropagation();
@@ -64,6 +71,22 @@ export function TaskItem({
             e.preventDefault();
             handleCancel();
         }
+    };
+
+    const handleDelete = () => {
+        const promise = deleteTask.mutateAsync(task.id);
+
+        toast.promise(promise, {
+            loading: "Menghapus tugas...",
+            success: () => {
+                queryClient.invalidateQueries({ queryKey: ["tasks"] });
+                onDelete?.(task.id);
+                return "Tugas berhasil dihapus";
+            },
+            error: (error) => {
+                return error.message;
+            },
+        });
     };
 
     const isFocusTarget = Boolean(
@@ -180,7 +203,16 @@ export function TaskItem({
                         </Button>
 
                         {/* Delete Button */}
-                        <TaskDelete taskId={task.id} />
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-xs"
+                            onClick={handleDelete}
+                            title="Hapus tugas"
+                            className="rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                        >
+                            <RiDeleteBin6Line className="size-3.5" />
+                        </Button>
                     </div>
                 )}
             </div>

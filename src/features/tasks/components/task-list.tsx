@@ -12,7 +12,6 @@ import {
 } from "@remixicon/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useDeleteTask } from "../hooks/use-delete-task";
 import { useGetTask } from "../hooks/use-get-task";
 import { useUpdateTask } from "../hooks/use-update-task";
 import { type Task } from "../types/task.type";
@@ -23,7 +22,6 @@ export { TaskItem };
 export function TaskList() {
   const { data: tasksResponse, isLoading, isError, refetch } = useGetTask();
   const updateTaskMutation = useUpdateTask();
-  const deleteTaskMutation = useDeleteTask();
   const queryClient = useQueryClient();
 
   const tasks: Task[] = tasksResponse?.data || [];
@@ -80,10 +78,6 @@ export function TaskList() {
         return error.message;
       },
     });
-  };
-
-  const handleDelete = (id: string) => {
-    deleteTaskMutation.mutate(id);
   };
 
   const handleUpdateTitle = (id: string, newTitle: string) => {
@@ -214,7 +208,6 @@ export function TaskList() {
               isFocused={true}
               onToggle={handleToggle}
               onFocus={handleFocus}
-              onDelete={handleDelete}
               onUpdateTitle={handleUpdateTitle}
             />
           </div>
@@ -238,7 +231,6 @@ export function TaskList() {
                   isFocused={false}
                   onToggle={handleToggle}
                   onFocus={handleFocus}
-                  onDelete={handleDelete}
                   onUpdateTitle={handleUpdateTitle}
                 />
               ))}
@@ -259,7 +251,6 @@ export function TaskList() {
                 isFocused={false}
                 onToggle={handleToggle}
                 onFocus={handleFocus}
-                onDelete={handleDelete}
                 onUpdateTitle={handleUpdateTitle}
               />
             ))}
