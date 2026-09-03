@@ -181,7 +181,7 @@ export default function PomodoroTimer() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center w-full max-w-xl mx-auto px-4 py-8 min-h-[400px]">
+      <div className="flex flex-col items-center justify-center w-full max-w-xl mx-auto px-4 py-8 min-h-100">
         <Spinner className="size-8 text-primary" />
       </div>
     );
