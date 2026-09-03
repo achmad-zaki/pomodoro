@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@/components/ui/spinner";
+import { Wave } from "@/components/loading-ui/wave";
 import { useGetSetting } from "@/features/settings/hooks/use-get-setting";
 import { PomodoroSetting } from "@/features/settings/types/setting.type";
 import { useGetTask } from "@/features/tasks/hooks/use-get-task";
@@ -395,7 +395,7 @@ export default function PomodoroTimer() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center w-full max-w-xl mx-auto px-4 py-8 min-h-100">
-        <Spinner className="size-8 text-primary" />
+        <Wave className="h-10 w-14 text-primary" />
       </div>
     );
   }
