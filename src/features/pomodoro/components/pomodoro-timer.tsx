@@ -1,10 +1,10 @@
 "use client";
 
 import { Spinner } from "@/components/ui/spinner";
-import { PomodoroSessionType } from "@/generated/prisma/enums";
 import { useGetSetting } from "@/features/settings/hooks/use-get-setting";
 import { PomodoroSetting } from "@/features/settings/types/setting.type";
 import { useGetTask } from "@/features/tasks/hooks/use-get-task";
+import { PomodoroSessionType } from "@/generated/prisma/enums";
 import { RiCupLine, RiFocus3Line, RiMoonLine } from "@remixicon/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -22,20 +22,124 @@ interface PomodoroTimerContentProps {
   settings?: PomodoroSetting;
 }
 
+const TIMER_STORAGE_KEY = "pomodoro_timer_state";
+
+interface PersistedTimerState {
+  mode: TimerMode;
+  timeLeft: number;
+  isRunning: boolean;
+  targetEndTime: number | null;
+  sessionsCompleted: number;
+}
+
+function getInitialTimerState(
+  initialDurations: TimerDurations
+): PersistedTimerState {
+  if (typeof window === "undefined") {
+    return {
+      mode: "pomodoro",
+      timeLeft: initialDurations.pomodoro * 60,
+      isRunning: false,
+      targetEndTime: null,
+      sessionsCompleted: 0,
+    };
+  }
+
+  try {
+    const raw = localStorage.getItem(TIMER_STORAGE_KEY);
+    if (raw) {
+      const saved: PersistedTimerState = JSON.parse(raw);
+      if (saved.isRunning && saved.targetEndTime) {
+        const remaining = Math.max(
+          0,
+          Math.ceil((saved.targetEndTime - Date.now()) / 1000)
+        );
+        if (remaining > 0) {
+          return {
+            mode: saved.mode || "pomodoro",
+            timeLeft: remaining,
+            isRunning: true,
+            targetEndTime: saved.targetEndTime,
+            sessionsCompleted: saved.sessionsCompleted || 0,
+          };
+        } else {
+          return {
+            mode: saved.mode || "pomodoro",
+            timeLeft: 0,
+            isRunning: false,
+            targetEndTime: null,
+            sessionsCompleted: saved.sessionsCompleted || 0,
+          };
+        }
+      }
+
+      const mode = saved.mode || "pomodoro";
+      return {
+        mode,
+        timeLeft:
+          typeof saved.timeLeft === "number"
+            ? saved.timeLeft
+            : (initialDurations[mode] ?? 25) * 60,
+        isRunning: false,
+        targetEndTime: null,
+        sessionsCompleted: saved.sessionsCompleted || 0,
+      };
+    }
+  } catch (error) {
+    console.error("Gagal memuat status timer dari localStorage:", error);
+  }
+
+  return {
+    mode: "pomodoro",
+    timeLeft: initialDurations.pomodoro * 60,
+    isRunning: false,
+    targetEndTime: null,
+    sessionsCompleted: 0,
+  };
+}
+
 function PomodoroTimerContent({
   initialDurations,
   settings,
 }: PomodoroTimerContentProps) {
+  const [initialState] = useState(() => getInitialTimerState(initialDurations));
   const [durations, setDurations] = useState<TimerDurations>(initialDurations);
-  const [mode, setMode] = useState<TimerMode>("pomodoro");
-  const [timeLeft, setTimeLeft] = useState<number>(initialDurations.pomodoro * 60);
-  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [mode, setMode] = useState<TimerMode>(initialState.mode);
+  const [timeLeft, setTimeLeft] = useState<number>(initialState.timeLeft);
+  const [isRunning, setIsRunning] = useState<boolean>(initialState.isRunning);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
-  const [, setSessionsCompleted] = useState<number>(0);
+  const [sessionsCompleted, setSessionsCompleted] = useState<number>(
+    initialState.sessionsCompleted
+  );
 
   const { mutate: recordSession } = useCreateSession();
   const { data: tasksResponse } = useGetTask();
   const focusedTask = tasksResponse?.data?.find((t) => t.isFocused && !t.completed);
+
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const targetEndTimeRef = useRef<number | null>(initialState.targetEndTime);
+  const timeLeftRef = useRef<number>(timeLeft);
+  const isRecordingRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    timeLeftRef.current = timeLeft;
+  }, [timeLeft]);
+
+  // Simpan status timer ke localStorage setiap kali ada perubahan state
+  useEffect(() => {
+    try {
+      const stateToSave: PersistedTimerState = {
+        mode,
+        timeLeft,
+        isRunning,
+        targetEndTime: targetEndTimeRef.current,
+        sessionsCompleted,
+      };
+      localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(stateToSave));
+    } catch (error) {
+      console.error("Gagal menyimpan status timer ke localStorage:", error);
+    }
+  }, [mode, timeLeft, isRunning, sessionsCompleted]);
 
   const modes: Record<TimerMode, ModeConfig> = useMemo(
     () => ({
@@ -67,13 +171,12 @@ function PomodoroTimerContent({
   const handleUpdateDurations = (newDurations: TimerDurations) => {
     setDurations(newDurations);
     if (!isRunning) {
+      targetEndTimeRef.current = null;
       if (mode === "pomodoro") setTimeLeft(newDurations.pomodoro * 60);
       else if (mode === "shortBreak") setTimeLeft(newDurations.shortBreak * 60);
       else setTimeLeft(newDurations.longBreak * 60);
     }
   };
-
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const triggerChime = useCallback(() => {
     if (soundEnabled) {
@@ -82,26 +185,35 @@ function PomodoroTimerContent({
   }, [soundEnabled]);
 
   const handleModeChange = (newMode: TimerMode) => {
+    targetEndTimeRef.current = null;
     setIsRunning(false);
     setMode(newMode);
     setTimeLeft(modes[newMode].duration);
   };
 
   const togglePlayPause = () => {
-    setIsRunning((prev) => !prev);
+    setIsRunning((prev) => {
+      const next = !prev;
+      if (next) {
+        targetEndTimeRef.current = Date.now() + timeLeftRef.current * 1000;
+      } else {
+        targetEndTimeRef.current = null;
+      }
+      return next;
+    });
   };
 
   const handleReset = () => {
+    targetEndTimeRef.current = null;
     setIsRunning(false);
     setTimeLeft(modes[mode].duration);
   };
-
-  const isRecordingRef = useRef(false);
 
   const handleSessionComplete = useCallback(() => {
     if (isRecordingRef.current) return;
     isRecordingRef.current = true;
 
+    targetEndTimeRef.current = null;
     setIsRunning(false);
     triggerChime();
 
@@ -110,8 +222,8 @@ function PomodoroTimerContent({
       mode === "pomodoro"
         ? PomodoroSessionType.FOCUS
         : mode === "shortBreak"
-        ? PomodoroSessionType.SHORT_BREAK
-        : PomodoroSessionType.LONG_BREAK;
+          ? PomodoroSessionType.SHORT_BREAK
+          : PomodoroSessionType.LONG_BREAK;
 
     recordSession(
       {
@@ -140,17 +252,24 @@ function PomodoroTimerContent({
         const sessionsTarget = settings?.sessionsBeforeLongBreak || 4;
         const nextMode: TimerMode =
           nextCount % sessionsTarget === 0 ? "longBreak" : "shortBreak";
+        const nextDuration = durations[nextMode] * 60;
+
         setMode(nextMode);
-        setTimeLeft(modes[nextMode].duration);
+        setTimeLeft(nextDuration);
+
         if (settings?.autoStartBreak) {
+          targetEndTimeRef.current = Date.now() + nextDuration * 1000;
           setIsRunning(true);
         }
         return nextCount;
       });
     } else {
+      const nextDuration = durations.pomodoro * 60;
       setMode("pomodoro");
-      setTimeLeft(modes.pomodoro.duration);
+      setTimeLeft(nextDuration);
+
       if (settings?.autoStartFocus) {
+        targetEndTimeRef.current = Date.now() + nextDuration * 1000;
         setIsRunning(true);
       }
     }
@@ -158,27 +277,49 @@ function PomodoroTimerContent({
     mode,
     durations,
     focusedTask,
-    modes,
     recordSession,
     settings,
     triggerChime,
   ]);
 
-  // Timer Tick Effect
+  // Timer Tick Effect dengan perhitungan target timestamp
   useEffect(() => {
     if (isRunning) {
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current!);
-            setTimeout(() => {
-              handleSessionComplete();
-            }, 0);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+      if (!targetEndTimeRef.current) {
+        targetEndTimeRef.current = Date.now() + timeLeftRef.current * 1000;
+      }
+
+      const checkTime = () => {
+        if (!targetEndTimeRef.current) return;
+        const remaining = Math.max(
+          0,
+          Math.ceil((targetEndTimeRef.current - Date.now()) / 1000)
+        );
+
+        setTimeLeft(remaining);
+
+        if (remaining <= 0) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          targetEndTimeRef.current = null;
+          handleSessionComplete();
+        }
+      };
+
+      checkTime();
+      timerRef.current = setInterval(checkTime, 500);
+
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === "visible") {
+          checkTime();
+        }
+      };
+
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+
+      return () => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      };
     } else if (timerRef.current) {
       clearInterval(timerRef.current);
     }
