@@ -78,8 +78,8 @@ export default function SettingsSheet({
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>{trigger ?? defaultTrigger}</SheetTrigger>
-      <SheetContent className="flex flex-col h-full overflow-hidden p-0">
-        <SheetHeader className="p-6 pb-0 shrink-0">
+      <SheetContent className="flex flex-col h-full overflow-hidden">
+        <SheetHeader className="p-6 shrink-0">
           <SheetTitle className="flex items-center gap-2">
             <RiSettings4Line className="size-5 text-primary" />
             Pengaturan

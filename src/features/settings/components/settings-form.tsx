@@ -12,7 +12,6 @@ import { PomodoroSetting, TimerDurations } from "../types/setting.type";
 import { AutomationSettings } from "./automation-settings";
 import { CycleSettings } from "./cycle-settings";
 import { DurationSettings } from "./duration-settings";
-import { PresetSettings } from "./preset-settings";
 
 export const DEFAULT_SETTINGS: Omit<
   PomodoroSetting,
@@ -40,15 +39,6 @@ export function SettingsForm({
   const queryClient = useQueryClient();
   const updateSetting = useUpdateSetting();
   const [formValues, setFormValues] = useState(initialSettings);
-
-  const handleApplyPreset = (preset: TimerDurations) => {
-    setFormValues((prev) => ({
-      ...prev,
-      focusDuration: preset.pomodoro,
-      shortBreakDuration: preset.shortBreak,
-      longBreakDuration: preset.longBreak,
-    }));
-  };
 
   const handleDurationChange = (
     field: "focusDuration" | "shortBreakDuration" | "longBreakDuration",
@@ -104,10 +94,7 @@ export function SettingsForm({
 
   return (
     <>
-      <div className="p-6 flex-1 min-h-0 flex flex-col gap-6 overflow-y-auto">
-        {/* Quick Presets */}
-        <PresetSettings onSelectPreset={handleApplyPreset} />
-
+      <div className="p-6 flex-1 min-h-0 flex flex-col gap-6 overflow-y-auto no-scrollbar">
         {/* Duration Customization */}
         <DurationSettings
           focusDuration={formValues.focusDuration}
