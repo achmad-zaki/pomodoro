@@ -1,4 +1,4 @@
-import PomodoroTimer from "@/features/pomodoro/pomodoro-timer";
+import PomodoroTimer from "@/features/pomodoro/components/pomodoro-timer";
 
 export default function Home() {
   return (
