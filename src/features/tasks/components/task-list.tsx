@@ -154,7 +154,7 @@ export function TaskList() {
 
   if (totalCount === 0) {
     return (
-      <div className="relative p-6 text-center rounded-2xl border border-dashed border-border/80 bg-gradient-to-b from-card/80 to-card/30 backdrop-blur-xs">
+      <div className="relative p-6 text-center rounded-2xl border border-dashed border-border/80 bg-linear-to-b from-card/80 to-card/30 backdrop-blur-xs">
         <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3 shadow-xs">
           <RiListCheck3 className="size-6" />
         </div>
