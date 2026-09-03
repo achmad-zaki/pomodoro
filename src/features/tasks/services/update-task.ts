@@ -3,6 +3,7 @@ import { UpdateTaskResponse } from "../types/task.type";
 export type UpdateTaskPayload = {
   title?: string;
   completed?: boolean;
+  isFocused?: boolean;
 };
 
 export const updateTask = async (

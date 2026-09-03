@@ -11,7 +11,6 @@ import {
   RiTargetLine,
 } from "@remixicon/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useDeleteTask } from "../hooks/use-delete-task";
 import { useGetTask } from "../hooks/use-get-task";
@@ -27,46 +26,60 @@ export function TaskList() {
   const deleteTaskMutation = useDeleteTask();
   const queryClient = useQueryClient();
 
-  const [focusTaskId, setFocusTaskId] = useState<string | null>(null);
-
-  const rawTasks = tasksResponse?.data || [];
-
-  const tasks: Task[] = useMemo(() => {
-    return rawTasks.map((t, idx) => ({
-      ...t,
-      isFocus: focusTaskId ? t.id === focusTaskId : idx === 0 && !t.completed,
-    }));
-  }, [rawTasks, focusTaskId]);
+  const tasks: Task[] = tasksResponse?.data || [];
 
   const totalCount = tasks.length;
   const completedCount = tasks.filter((t) => t.completed).length;
   const activeTasks = tasks.filter((t) => !t.completed);
   const completedTasks = tasks.filter((t) => t.completed);
-  const focusTask = tasks.find((t) => t.isFocus && !t.completed);
+  const focusTask = tasks.find((t) => t.isFocused && !t.completed);
 
   const completionPercentage =
     totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   // Handler functions
   const handleToggle = (id: string, currentCompleted: boolean) => {
-    updateTaskMutation.mutate(
-      {
-        id,
-        payload: { completed: !currentCompleted },
+    const nextCompleted = !currentCompleted;
+    const promise = updateTaskMutation.mutateAsync({
+      id,
+      payload: {
+        completed: nextCompleted,
+        ...(nextCompleted ? { isFocused: false } : {}),
       },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["tasks"] });
-        },
-        onError: (error) => {
-          toast.error(error.message);
-        },
-      }
-    );
+    });
+
+    toast.promise(promise, {
+      loading: "Memperbarui status tugas...",
+      success: () => {
+        queryClient.invalidateQueries({ queryKey: ["tasks"] });
+        return nextCompleted ? "Tugas selesai!" : "Tugas diaktifkan kembali";
+      },
+      error: (error) => {
+        return error.message;
+      },
+    });
   };
 
   const handleFocus = (id: string) => {
-    setFocusTaskId(id === focusTaskId ? null : id);
+    const targetTask = tasks.find((t) => t.id === id);
+    if (!targetTask) return;
+
+    const nextFocused = !targetTask.isFocused;
+    const promise = updateTaskMutation.mutateAsync({
+      id,
+      payload: { isFocused: nextFocused },
+    });
+
+    toast.promise(promise, {
+      loading: nextFocused ? "Menetapkan target fokus..." : "Menghapus target fokus...",
+      success: () => {
+        queryClient.invalidateQueries({ queryKey: ["tasks"] });
+        return nextFocused ? "Target fokus berhasil diatur" : "Target fokus dinonaktifkan";
+      },
+      error: (error) => {
+        return error.message;
+      },
+    });
   };
 
   const handleDelete = (id: string) => {
@@ -198,6 +211,7 @@ export function TaskList() {
             </div>
             <TaskItem
               task={focusTask}
+              isFocused={true}
               onToggle={handleToggle}
               onFocus={handleFocus}
               onDelete={handleDelete}
@@ -207,7 +221,7 @@ export function TaskList() {
         )}
 
         {/* Other Active Tasks Section */}
-        {activeTasks.filter((t) => !t.isFocus).length > 0 && (
+        {activeTasks.filter((t) => !t.isFocused).length > 0 && (
           <div className="space-y-1.5">
             {focusTask && (
               <div className="flex items-center gap-1.5 px-1 pt-1 text-[11px] font-semibold text-muted-foreground">
@@ -216,11 +230,12 @@ export function TaskList() {
               </div>
             )}
             {activeTasks
-              .filter((t) => !t.isFocus)
+              .filter((t) => !t.isFocused)
               .map((task) => (
                 <TaskItem
                   key={task.id}
                   task={task}
+                  isFocused={false}
                   onToggle={handleToggle}
                   onFocus={handleFocus}
                   onDelete={handleDelete}
@@ -241,6 +256,7 @@ export function TaskList() {
               <TaskItem
                 key={task.id}
                 task={task}
+                isFocused={false}
                 onToggle={handleToggle}
                 onFocus={handleFocus}
                 onDelete={handleDelete}

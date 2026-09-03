@@ -17,6 +17,7 @@ import TaskDelete from "./task-delete";
 
 export interface TaskItemProps {
     task: Task;
+    isFocused?: boolean;
     onToggle?: (id: string, currentCompleted: boolean) => void;
     onFocus?: (id: string) => void;
     onDelete?: (id: string) => void;
@@ -25,6 +26,7 @@ export interface TaskItemProps {
 
 export function TaskItem({
     task,
+    isFocused,
     onToggle,
     onFocus,
     onUpdateTitle,
@@ -64,7 +66,9 @@ export function TaskItem({
         }
     };
 
-    const isFocusTarget = task.isFocus && !task.completed;
+    const isFocusTarget = Boolean(
+        (isFocused !== undefined ? isFocused : task.isFocused) && !task.completed
+    );
 
     return (
         <div

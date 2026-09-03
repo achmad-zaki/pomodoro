@@ -1,3 +1,4 @@
+import { Prisma } from "@/generated/prisma/client";
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import z from "zod";
@@ -9,6 +10,7 @@ const updateTaskSchema = z.object({
         message: "Judul task tidak boleh lebih dari 255 karakter"
     }).optional(),
     completed: z.boolean().optional(),
+    isFocused: z.boolean().optional(),
 });
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -33,22 +35,57 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         const validated = updateTaskSchema.safeParse(body);
 
         if (!validated.success) {
-            return Response.json(validated.error.flatten().fieldErrors, { status: 400 });
+            return Response.json({
+                success: false,
+                message: "Validation failed",
+                error: validated.error.flatten().fieldErrors,
+            }, { status: 400 });
         }
 
-        const updateTask = await prisma.task.update({
+        // If this task is marked as focused, reset isFocused on other tasks
+        if (validated.data.isFocused === true) {
+            await prisma.task.updateMany({
+                where: {
+                    id: { not: id },
+                    isFocused: true,
+                },
+                data: {
+                    isFocused: false,
+                },
+            });
+        }
+
+        const updateData: Prisma.TaskUpdateInput = {};
+
+        if (validated.data.title !== undefined) {
+            updateData.title = validated.data.title;
+        }
+
+        if (validated.data.completed !== undefined) {
+            updateData.completed = validated.data.completed;
+        }
+
+        if (validated.data.isFocused !== undefined) {
+            updateData.isFocused = validated.data.isFocused;
+        }
+
+        if (
+            validated.data.completed === true &&
+            validated.data.isFocused === undefined
+        ) {
+            updateData.isFocused = false;
+        }
+
+        const updatedTask = await prisma.task.update({
             where: {
-                id
+                id,
             },
-            data: {
-                ...(validated.data.title !== undefined && { title: validated.data.title }),
-                ...(validated.data.completed !== undefined && { completed: validated.data.completed }),
-            }
+            data: updateData,
         });
 
         return Response.json({
             message: "Tugas berhasil diubah",
-            data: updateTask
+            data: updatedTask
         }, { status: 200 });
     } catch {
         return Response.json({

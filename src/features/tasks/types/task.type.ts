@@ -2,7 +2,9 @@ export type Task = {
     id: string
     title: string
     completed: boolean
-    isFocus: boolean
+    isFocused: boolean
+    createdAt?: string
+    updatedAt?: string
 }
 
 export type GetTasksResponse = {
