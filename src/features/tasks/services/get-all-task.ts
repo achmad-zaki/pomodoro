@@ -6,10 +6,10 @@ export const getAllTask = async (): Promise<GetTasksResponse> => {
         headers: {
             'Content-Type': 'application/json'
         },
-    })
+    });
+    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-        throw new Error("Terjadi Kesalahan saat Mengambil Data")
+        throw new Error(data.message || "Terjadi Kesalahan saat Mengambil Data");
     }
-    const data: GetTasksResponse = await response.json()
-    return data
+    return data as GetTasksResponse;
 }

@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import z from "zod";
 
-const createTashSchema = z.object({
+const createTaskSchema = z.object({
     title: z.string().min(1, {
         message: "Judul task harus diisi"
     }).max(255, {
@@ -33,10 +33,16 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
 
-        const validated = createTashSchema.safeParse(body);
+        const validated = createTaskSchema.safeParse(body);
 
         if (!validated.success) {
-            return Response.json(validated.error.flatten().fieldErrors, { status: 400 });
+            const firstErrorMessage =
+                validated.error.issues[0]?.message || "Data tidak valid";
+            return Response.json({
+                success: false,
+                message: firstErrorMessage,
+                error: validated.error.flatten().fieldErrors,
+            }, { status: 400 });
         }
 
         const task = await prisma.task.create({

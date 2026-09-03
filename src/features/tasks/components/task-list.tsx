@@ -214,7 +214,7 @@ export function TaskList() {
         )}
 
         {/* Other Active Tasks Section */}
-        {activeTasks.filter((t) => !t.isFocused).length > 0 && (
+        {activeTasks.filter((t) => t.id !== focusTask?.id).length > 0 && (
           <div className="space-y-1.5">
             {focusTask && (
               <div className="flex items-center gap-1.5 px-1 pt-1 text-[11px] font-semibold text-muted-foreground">
@@ -223,7 +223,7 @@ export function TaskList() {
               </div>
             )}
             {activeTasks
-              .filter((t) => !t.isFocused)
+              .filter((t) => t.id !== focusTask?.id)
               .map((task) => (
                 <TaskItem
                   key={task.id}

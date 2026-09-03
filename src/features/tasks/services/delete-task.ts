@@ -8,9 +8,10 @@ export const deleteTask = async (
     },
   });
 
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error("Terjadi kesalahan saat menghapus tugas");
+    throw new Error(data.message || "Terjadi kesalahan saat menghapus tugas");
   }
 
-  return response.json();
+  return data;
 };

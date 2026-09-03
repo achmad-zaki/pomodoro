@@ -98,7 +98,7 @@ export function TaskItem({
             className={cn(
                 "group relative flex items-start gap-3 p-3.5 rounded-xl border transition-all duration-200 overflow-hidden",
                 task.completed
-                    ? "bg-emerald-50 border-emerald-500/30 text-emerald-900"
+                    ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-900 dark:text-emerald-300"
                     : isFocusTarget
                         ? "bg-linear-to-r from-amber-500/10 via-amber-500/5 to-card border-amber-500/40"
                         : "bg-card border-border hover:border-primary/40"
@@ -130,7 +130,7 @@ export function TaskItem({
                             type="button"
                             onClick={handleSave}
                             title="Simpan (Enter)"
-                            className="text-emerald-600 hover:text-emerald-700 shrink-0"
+                            className="text-emerald-600 hover:text-emerald-700 shrink-0 cursor-pointer p-1"
                         >
                             <RiCheckLine className="size-4" />
                         </button>
@@ -138,7 +138,7 @@ export function TaskItem({
                             type="button"
                             onClick={handleCancel}
                             title="Batal (Esc)"
-                            className="text-muted-foreground shrink-0"
+                            className="text-muted-foreground hover:text-foreground shrink-0 cursor-pointer p-1"
                         >
                             <RiCloseLine className="size-4" />
                         </button>
@@ -151,7 +151,7 @@ export function TaskItem({
                             className={cn(
                                 "text-sm font-medium leading-normal cursor-pointer select-none transition-colors",
                                 task.completed
-                                    ? "text-emerald-700"
+                                    ? "line-through text-muted-foreground/80 dark:text-muted-foreground/70"
                                     : "text-foreground group-hover:text-foreground/90"
                             )}
                         >
@@ -208,8 +208,9 @@ export function TaskItem({
                             variant="ghost"
                             size="icon-xs"
                             onClick={handleDelete}
+                            disabled={deleteTask.isPending}
                             title="Hapus tugas"
-                            className="rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                            className="rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer disabled:opacity-50"
                         >
                             <RiDeleteBin6Line className="size-3.5" />
                         </Button>
