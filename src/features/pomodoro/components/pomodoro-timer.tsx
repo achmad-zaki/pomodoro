@@ -12,6 +12,10 @@ import { TimerDurations } from "../../settings/components/settings-sheet";
 import { useCreateSession } from "../hooks/use-create-session";
 import { ModeConfig, TimerMode } from "../types/pomodoro.type";
 import { playChime } from "../utils/audio";
+import {
+  requestNotificationPermission,
+  sendNotification,
+} from "../utils/notification";
 import { TimerActions } from "./timer-actions";
 import { TimerControls } from "./timer-controls";
 import { TimerDisplay } from "./timer-display";
@@ -195,6 +199,7 @@ function PomodoroTimerContent({
     setIsRunning((prev) => {
       const next = !prev;
       if (next) {
+        requestNotificationPermission();
         targetEndTimeRef.current = Date.now() + timeLeftRef.current * 1000;
       } else {
         targetEndTimeRef.current = null;
@@ -216,6 +221,18 @@ function PomodoroTimerContent({
     targetEndTimeRef.current = null;
     setIsRunning(false);
     triggerChime();
+
+    if (mode === "pomodoro") {
+      sendNotification(
+        "Waktunya Istirahat! ☕",
+        "Sesi fokus Pomodoro Anda telah selesai."
+      );
+    } else {
+      sendNotification(
+        "Waktunya Kembali Fokus! 💪",
+        "Sesi istirahat Anda telah selesai."
+      );
+    }
 
     // Record completed session to database
     const sessionType =

@@ -144,35 +144,59 @@ export default function SessionSheet() {
 
           {/* Quick Stats Banner */}
           {stats && (
-            <div className="grid grid-cols-3 gap-2 pt-3 mt-1">
-              <div className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-primary/5 border border-primary/15">
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <RiFireLine className="size-3.5 text-primary" />
-                  Fokus Hari Ini
-                </span>
-                <span className="text-base font-bold text-foreground mt-0.5">
-                  {stats.today.focusSessionsCount} sesi
-                </span>
+            <div className="grid grid-cols-3 gap-2.5 pt-3 mt-1">
+              {/* Fokus Hari Ini */}
+              <div className="flex flex-col justify-between p-3 rounded-2xl bg-primary text-primary-foreground shadow-xs border border-white/15 transition-all duration-200 hover:-translate-y-0.5">
+                <div className="flex items-center gap-1.5">
+                  <div className="size-6 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                    <RiFireLine className="size-3.5 text-white" />
+                  </div>
+                  <span className="text-[11px] font-semibold text-white/90 leading-tight">
+                    Fokus Hari Ini
+                  </span>
+                </div>
+                <div className="mt-2.5 flex items-baseline gap-1">
+                  <span className="text-xl font-black tracking-tight leading-none">
+                    {stats.today.focusSessionsCount}
+                  </span>
+                  <span className="text-xs font-semibold text-white/80">sesi</span>
+                </div>
               </div>
 
-              <div className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-primary/5 border border-primary/15">
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <RiTimeLine className="size-3.5 text-primary" />
-                  Waktu Fokus
-                </span>
-                <span className="text-base font-bold text-foreground mt-0.5">
-                  {stats.today.focusDuration} mnt
-                </span>
+              {/* Waktu Fokus */}
+              <div className="flex flex-col justify-between p-3 rounded-2xl bg-indigo-600 text-white shadow-xs border border-white/15 transition-all duration-200 hover:-translate-y-0.5">
+                <div className="flex items-center gap-1.5">
+                  <div className="size-6 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                    <RiTimeLine className="size-3.5 text-white" />
+                  </div>
+                  <span className="text-[11px] font-semibold text-white/90 leading-tight">
+                    Waktu Fokus
+                  </span>
+                </div>
+                <div className="mt-2.5 flex items-baseline gap-1">
+                  <span className="text-xl font-black tracking-tight leading-none">
+                    {stats.today.focusDuration}
+                  </span>
+                  <span className="text-xs font-semibold text-white/80">mnt</span>
+                </div>
               </div>
 
-              <div className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-muted/40 border border-border/60">
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <RiCupLine className="size-3.5 text-amber-500" />
-                  Istirahat
-                </span>
-                <span className="text-base font-bold text-foreground mt-0.5">
-                  {stats.today.breakDuration} mnt
-                </span>
+              {/* Istirahat */}
+              <div className="flex flex-col justify-between p-3 rounded-2xl bg-amber-500 text-white shadow-xs border border-white/15 transition-all duration-200 hover:-translate-y-0.5">
+                <div className="flex items-center gap-1.5">
+                  <div className="size-6 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                    <RiCupLine className="size-3.5 text-white" />
+                  </div>
+                  <span className="text-[11px] font-semibold text-white/90 leading-tight">
+                    Istirahat
+                  </span>
+                </div>
+                <div className="mt-2.5 flex items-baseline gap-1">
+                  <span className="text-xl font-black tracking-tight leading-none">
+                    {stats.today.breakDuration}
+                  </span>
+                  <span className="text-xs font-semibold text-white/80">mnt</span>
+                </div>
               </div>
             </div>
           )}
