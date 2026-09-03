@@ -1,11 +1,15 @@
 "use client";
 
 import { Spinner } from "@/components/ui/spinner";
+import { PomodoroSessionType } from "@/generated/prisma/enums";
 import { useGetSetting } from "@/features/settings/hooks/use-get-setting";
 import { PomodoroSetting } from "@/features/settings/types/setting.type";
+import { useGetTask } from "@/features/tasks/hooks/use-get-task";
 import { RiCupLine, RiFocus3Line, RiMoonLine } from "@remixicon/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { TimerDurations } from "../../settings/components/settings-sheet";
+import { useCreateSession } from "../hooks/use-create-session";
 import { ModeConfig, TimerMode } from "../types/pomodoro.type";
 import { playChime } from "../utils/audio";
 import { TimerActions } from "./timer-actions";
@@ -28,6 +32,10 @@ function PomodoroTimerContent({
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [, setSessionsCompleted] = useState<number>(0);
+
+  const { mutate: recordSession } = useCreateSession();
+  const { data: tasksResponse } = useGetTask();
+  const focusedTask = tasksResponse?.data?.find((t) => t.isFocused && !t.completed);
 
   const modes: Record<TimerMode, ModeConfig> = useMemo(
     () => ({
@@ -88,6 +96,74 @@ function PomodoroTimerContent({
     setTimeLeft(modes[mode].duration);
   };
 
+  const isRecordingRef = useRef(false);
+
+  const handleSessionComplete = useCallback(() => {
+    if (isRecordingRef.current) return;
+    isRecordingRef.current = true;
+
+    setIsRunning(false);
+    triggerChime();
+
+    // Record completed session to database
+    const sessionType =
+      mode === "pomodoro"
+        ? PomodoroSessionType.FOCUS
+        : mode === "shortBreak"
+        ? PomodoroSessionType.SHORT_BREAK
+        : PomodoroSessionType.LONG_BREAK;
+
+    recordSession(
+      {
+        type: sessionType,
+        duration: durations[mode],
+        taskId: mode === "pomodoro" ? (focusedTask?.id || null) : null,
+      },
+      {
+        onSettled: () => {
+          isRecordingRef.current = false;
+        },
+        onSuccess: () => {
+          toast.success(
+            mode === "pomodoro"
+              ? "Sesi Fokus selesai & dicatat!"
+              : "Sesi Istirahat selesai!"
+          );
+        },
+      }
+    );
+
+    // Auto advance mode
+    if (mode === "pomodoro") {
+      setSessionsCompleted((s) => {
+        const nextCount = s + 1;
+        const sessionsTarget = settings?.sessionsBeforeLongBreak || 4;
+        const nextMode: TimerMode =
+          nextCount % sessionsTarget === 0 ? "longBreak" : "shortBreak";
+        setMode(nextMode);
+        setTimeLeft(modes[nextMode].duration);
+        if (settings?.autoStartBreak) {
+          setIsRunning(true);
+        }
+        return nextCount;
+      });
+    } else {
+      setMode("pomodoro");
+      setTimeLeft(modes.pomodoro.duration);
+      if (settings?.autoStartFocus) {
+        setIsRunning(true);
+      }
+    }
+  }, [
+    mode,
+    durations,
+    focusedTask,
+    modes,
+    recordSession,
+    settings,
+    triggerChime,
+  ]);
+
   // Timer Tick Effect
   useEffect(() => {
     if (isRunning) {
@@ -95,30 +171,9 @@ function PomodoroTimerContent({
         setTimeLeft((prev) => {
           if (prev <= 1) {
             clearInterval(timerRef.current!);
-            setIsRunning(false);
-            triggerChime();
-
-            // Auto advance mode
-            if (mode === "pomodoro") {
-              setSessionsCompleted((s) => {
-                const nextCount = s + 1;
-                const sessionsTarget = settings?.sessionsBeforeLongBreak || 4;
-                const nextMode: TimerMode =
-                  nextCount % sessionsTarget === 0 ? "longBreak" : "shortBreak";
-                setMode(nextMode);
-                setTimeLeft(modes[nextMode].duration);
-                if (settings?.autoStartBreak) {
-                  setIsRunning(true);
-                }
-                return nextCount;
-              });
-            } else {
-              setMode("pomodoro");
-              setTimeLeft(modes.pomodoro.duration);
-              if (settings?.autoStartFocus) {
-                setIsRunning(true);
-              }
-            }
+            setTimeout(() => {
+              handleSessionComplete();
+            }, 0);
             return 0;
           }
           return prev - 1;
@@ -131,7 +186,7 @@ function PomodoroTimerContent({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isRunning, mode, triggerChime, settings, modes]);
+  }, [isRunning, handleSessionComplete]);
 
   const modeLabel = modes[mode].label;
 

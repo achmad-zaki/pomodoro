@@ -33,11 +33,11 @@ export function NumberStepper({
     <div className={`flex items-center gap-2 ${className ?? ""}`}>
       <Button
         type="button"
-        variant="outline"
+        variant="3d"
         size="icon"
         disabled={value <= min}
         onClick={handleDecrement}
-        className="size-9 rounded-xl shrink-0 cursor-pointer text-muted-foreground hover:text-foreground hover:border-primary/50"
+        className="size-9 shrink-0 cursor-pointer"
         title="Kurangi"
       >
         <RiSubtractLine className="size-4" />
@@ -72,11 +72,11 @@ export function NumberStepper({
 
       <Button
         type="button"
-        variant="outline"
+        variant="3d"
         size="icon"
         disabled={value >= max}
         onClick={handleIncrement}
-        className="size-9 rounded-xl shrink-0 cursor-pointer text-muted-foreground hover:text-foreground hover:border-primary/50"
+        className="size-9 shrink-0 cursor-pointer"
         title="Tambah"
       >
         <RiAddLine className="size-4" />

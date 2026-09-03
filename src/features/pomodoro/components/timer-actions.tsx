@@ -4,6 +4,7 @@ import SettingsSheet, {
 } from "@/features/settings/components/settings-sheet";
 import TaskSheet from "@/features/tasks/components/task-sheet";
 import { RiVolumeMuteLine, RiVolumeUpLine } from "@remixicon/react";
+import SessionSheet from "./session-sheet";
 
 interface TimerActionsProps {
   durations: TimerDurations;
@@ -21,6 +22,7 @@ export function TimerActions({
   return (
     <div className="mt-5 flex justify-center gap-2">
       <TaskSheet />
+      <SessionSheet />
       <SettingsSheet
         durations={durations}
         onUpdateDurations={onUpdateDurations}
@@ -28,6 +30,7 @@ export function TimerActions({
       <Button
         size="icon-lg"
         variant="secondary"
+        className="cursor-pointer"
         onClick={onToggleSound}
         title={soundEnabled ? "Matikan Suara" : "Nyalakan Suara"}
       >
