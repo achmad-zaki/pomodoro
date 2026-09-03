@@ -3,9 +3,9 @@
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { RiListCheck3 } from "@remixicon/react"
+import { useGetTask } from "../hooks/use-get-task"
 import TaskForm from "./task-form"
 import { TaskList } from "./task-list"
-import { useGetTask } from "../hooks/use-get-task"
 
 export default function TaskSheet() {
     const { data: tasksResponse } = useGetTask()
@@ -20,8 +20,8 @@ export default function TaskSheet() {
                     Tugas
                 </Button>
             </SheetTrigger>
-            <SheetContent className="flex flex-col h-full overflow-hidden p-0">
-                <SheetHeader className="p-6 pb-0 shrink-0">
+            <SheetContent className="flex flex-col h-full overflow-hidden">
+                <SheetHeader className="p-6 shrink-0">
                     <SheetTitle>Daftar Tugas</SheetTitle>
                     <SheetDescription>Kelola target & fokus Kamu</SheetDescription>
                 </SheetHeader>
