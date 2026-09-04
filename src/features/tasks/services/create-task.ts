@@ -1,12 +1,16 @@
-import { CreateTaskResponse } from "../types/task.type";
+import { CreateTaskPayload, CreateTaskResponse } from "../types/task.type";
 
-export const createTask = async (title: string): Promise<CreateTaskResponse> => {
+export const createTask = async (
+  payload: string | CreateTaskPayload
+): Promise<CreateTaskResponse> => {
+  const body = typeof payload === "string" ? { title: payload } : payload;
+
   const response = await fetch("/api/tasks", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ title }),
+    body: JSON.stringify(body),
   });
 
   const data = await response.json();

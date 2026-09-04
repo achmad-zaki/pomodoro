@@ -63,6 +63,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
         if (validated.data.completed !== undefined) {
             updateData.completed = validated.data.completed;
+
+            // Synchronize all subtasks to match parent task's completion status
+            await prisma.subTask.updateMany({
+                where: {
+                    taskId: id
+                },
+                data: {
+                    completed: validated.data.completed
+                }
+            });
         }
 
         if (validated.data.isFocused !== undefined) {
@@ -81,6 +91,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                 id,
             },
             data: updateData,
+            include: {
+                subtasks: {
+                    orderBy: {
+                        createdAt: "asc"
+                    }
+                }
+            }
         });
 
         return Response.json({

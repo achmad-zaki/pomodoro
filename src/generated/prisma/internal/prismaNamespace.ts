@@ -398,6 +398,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   Task: 'Task',
+  SubTask: 'SubTask',
   PomodoroSession: 'PomodoroSession',
   PomodoroSetting: 'PomodoroSetting'
 } as const
@@ -415,7 +416,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "task" | "pomodoroSession" | "pomodoroSetting"
+    modelProps: "task" | "subTask" | "pomodoroSession" | "pomodoroSetting"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -490,6 +491,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.TaskCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.TaskCountAggregateOutputType> | number
+        }
+      }
+    }
+    SubTask: {
+      payload: Prisma.$SubTaskPayload<ExtArgs>
+      fields: Prisma.SubTaskFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SubTaskFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubTaskPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SubTaskFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubTaskPayload>
+        }
+        findFirst: {
+          args: Prisma.SubTaskFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubTaskPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SubTaskFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubTaskPayload>
+        }
+        findMany: {
+          args: Prisma.SubTaskFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubTaskPayload>[]
+        }
+        create: {
+          args: Prisma.SubTaskCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubTaskPayload>
+        }
+        createMany: {
+          args: Prisma.SubTaskCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SubTaskCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubTaskPayload>[]
+        }
+        delete: {
+          args: Prisma.SubTaskDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubTaskPayload>
+        }
+        update: {
+          args: Prisma.SubTaskUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubTaskPayload>
+        }
+        deleteMany: {
+          args: Prisma.SubTaskDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SubTaskUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SubTaskUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubTaskPayload>[]
+        }
+        upsert: {
+          args: Prisma.SubTaskUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubTaskPayload>
+        }
+        aggregate: {
+          args: Prisma.SubTaskAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSubTask>
+        }
+        groupBy: {
+          args: Prisma.SubTaskGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SubTaskGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SubTaskCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SubTaskCountAggregateOutputType> | number
         }
       }
     }
@@ -690,6 +765,18 @@ export const TaskScalarFieldEnum = {
 } as const
 
 export type TaskScalarFieldEnum = (typeof TaskScalarFieldEnum)[keyof typeof TaskScalarFieldEnum]
+
+
+export const SubTaskScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  completed: 'completed',
+  taskId: 'taskId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SubTaskScalarFieldEnum = (typeof SubTaskScalarFieldEnum)[keyof typeof SubTaskScalarFieldEnum]
 
 
 export const PomodoroSessionScalarFieldEnum = {
@@ -977,6 +1064,7 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
 export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
   task?: Prisma.TaskOmit
+  subTask?: Prisma.SubTaskOmit
   pomodoroSession?: Prisma.PomodoroSessionOmit
   pomodoroSetting?: Prisma.PomodoroSettingOmit
 }

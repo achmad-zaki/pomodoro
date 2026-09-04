@@ -32,6 +32,10 @@ export function TaskList() {
   const completedTasks = tasks.filter((t) => t.completed);
   const focusTask = tasks.find((t) => t.isFocused && !t.completed);
 
+  const allSubtasks = tasks.flatMap((t) => t.subtasks || []);
+  const totalSubtasks = allSubtasks.length;
+  const completedSubtasks = allSubtasks.filter((st) => st.completed).length;
+
   const completionPercentage =
     totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
@@ -177,6 +181,9 @@ export function TaskList() {
               </span>
               <p className="text-[11px] text-muted-foreground">
                 {completedCount} dari {totalCount} tugas selesai
+                {totalSubtasks > 0 && (
+                  <span> • {completedSubtasks}/{totalSubtasks} sub-tugas</span>
+                )}
               </p>
             </div>
           </div>

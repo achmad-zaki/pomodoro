@@ -8,11 +8,25 @@ const createTaskSchema = z.object({
     }).max(255, {
         message: "Judul task tidak boleh lebih dari 255 karakter"
     }),
+    subtasks: z.array(
+        z.string().min(1, {
+            message: "Judul sub-tugas tidak boleh kosong"
+        }).max(255, {
+            message: "Judul sub-tugas tidak boleh lebih dari 255 karakter"
+        })
+    ).optional(),
 });
 
 export async function GET() {
     try {
         const tasks = await prisma.task.findMany({
+            include: {
+                subtasks: {
+                    orderBy: {
+                        createdAt: "asc"
+                    }
+                }
+            },
             orderBy: {
                 createdAt: "desc"
             }
@@ -22,9 +36,11 @@ export async function GET() {
             success: true,
             data: tasks
         }, { status: 200 });
-    } catch {
+    } catch (error) {
+        console.error("GET /api/tasks error:", error);
         return Response.json({
-            message: "Terjadi kesalahan pada server"
+            message: "Terjadi kesalahan pada server",
+            error: error instanceof Error ? error.message : String(error)
         }, { status: 500 });
     }
 }
@@ -45,9 +61,30 @@ export async function POST(req: NextRequest) {
             }, { status: 400 });
         }
 
+        const filteredSubtasks =
+            validated.data.subtasks
+                ?.map((s) => s.trim())
+                .filter((s) => s.length > 0) || [];
+
         const task = await prisma.task.create({
             data: {
                 title: validated.data.title,
+                ...(filteredSubtasks.length > 0
+                    ? {
+                        subtasks: {
+                            create: filteredSubtasks.map((stTitle) => ({
+                                title: stTitle,
+                            })),
+                        },
+                    }
+                    : {}),
+            },
+            include: {
+                subtasks: {
+                    orderBy: {
+                        createdAt: "asc"
+                    }
+                }
             }
         });
 
@@ -55,9 +92,11 @@ export async function POST(req: NextRequest) {
             message: "Tugas berhasil dibuat",
             data: task
         }, { status: 201 });
-    } catch {
+    } catch (error) {
+        console.error("POST /api/tasks error:", error);
         return Response.json({
-            message: "Terjadi kesalahan pada server"
+            message: "Terjadi kesalahan pada server",
+            error: error instanceof Error ? error.message : String(error)
         }, { status: 500 });
     }
 }

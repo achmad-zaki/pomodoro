@@ -9,6 +9,7 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/Task'
+export type * from './models/SubTask'
 export type * from './models/PomodoroSession'
 export type * from './models/PomodoroSetting'
 export type * from './commonInputTypes'

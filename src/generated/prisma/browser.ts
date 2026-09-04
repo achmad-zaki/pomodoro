@@ -23,6 +23,11 @@ export * from './enums';
  */
 export type Task = Prisma.TaskModel
 /**
+ * Model SubTask
+ * 
+ */
+export type SubTask = Prisma.SubTaskModel
+/**
  * Model PomodoroSession
  * 
  */

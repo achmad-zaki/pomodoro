@@ -9,8 +9,13 @@ import { TaskList } from "./task-list"
 
 export default function TaskSheet() {
     const { data: tasksResponse } = useGetTask()
-    const totalCount = tasksResponse?.data?.length || 0
-    const completedCount = tasksResponse?.data?.filter((t) => t.completed).length || 0
+    const tasks = tasksResponse?.data || []
+    const totalCount = tasks.length
+    const completedCount = tasks.filter((t) => t.completed).length
+
+    const allSubtasks = tasks.flatMap((t) => t.subtasks || [])
+    const totalSubtasks = allSubtasks.length
+    const completedSubtasks = allSubtasks.filter((st) => st.completed).length
 
     return (
         <Sheet>
@@ -32,7 +37,12 @@ export default function TaskSheet() {
                 </div>
 
                 <SheetFooter className="p-4 px-6 border-t border-border mt-auto flex flex-row items-center justify-between text-xs text-muted-foreground bg-muted/20 shrink-0">
-                    <span>Total Tugas: <strong className="text-foreground font-semibold">{totalCount}</strong></span>
+                    <div className="flex items-center gap-3">
+                        <span>Total Tugas: <strong className="text-foreground font-semibold">{totalCount}</strong></span>
+                        {totalSubtasks > 0 && (
+                            <span>Sub: <strong className="text-foreground font-semibold">{completedSubtasks}/{totalSubtasks}</strong></span>
+                        )}
+                    </div>
                     <span>Selesai: <strong className="text-emerald-600 font-semibold">{completedCount}</strong></span>
                 </SheetFooter>
             </SheetContent>
